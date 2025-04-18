@@ -9,7 +9,7 @@ Parameters:
     Default: t3.medium
 
 Resources:
- ## ------------------ IAM Users ------------------
+ ## ------------------ IAM Users -------------------
   DevOpsIAMUser:
     Type: AWS::IAM::User
     Properties:
