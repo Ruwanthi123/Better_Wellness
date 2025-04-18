@@ -63,7 +63,7 @@ jobs:
         aws eks update-kubeconfig --region $AWS_REGION --name better-wellness-prod
         cd client-service/src/main/angular/dist/jwt-angular/
         aws s3 cp . s3://better-wellness-live/ --recursive
-        cd ../../../../../
+        cd ../../../../../../
         kubectl apply -f auth-service/deployment.yaml -n ${{ env.KUBE_NAMESPACE }}
         kubectl apply -f message-service/deployment.yaml -n ${{ env.KUBE_NAMESPACE }}
         kubectl apply -f profile-service/deployment.yaml -n ${{ env.KUBE_NAMESPACE }}
