@@ -41,7 +41,7 @@ Resources:
             Resource: "*"
 
   ## ------------------ Private ECR ------------------
-  PrivateECRRepository:
+  AuthServiceECRRepository:
     Type: AWS::ECR::Repository
     DependsOn: DevOpsIAMUser
     Properties:
@@ -63,7 +63,7 @@ Resources:
               - "ecr:UploadLayerPart"
               - "ecr:CompleteLayerUpload"
 
-  PrivateECRRepository:
+  MessageServiceECRRepository:
     Type: AWS::ECR::Repository
     DependsOn: DevOpsIAMUser
     Properties:
@@ -85,7 +85,7 @@ Resources:
               - "ecr:UploadLayerPart"
               - "ecr:CompleteLayerUpload"
 
-  PrivateECRRepository:
+  ProfileServiceECRRepository:
     Type: AWS::ECR::Repository
     DependsOn: DevOpsIAMUser
     Properties:
