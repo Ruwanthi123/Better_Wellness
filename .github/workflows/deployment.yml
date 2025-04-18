@@ -39,7 +39,7 @@ jobs:
 
     - name: Build and Push Docker Images, Create Stack, Upload S3 Files
       run: |
-        aws cloudformation create-stack --stack-name better-wellness-live --template-body file://amazon-eks.yaml --capabilities CAPABILITY_NAMED_IAM  --region $AWS_REGION
+        aws cloudformation wait create-stack --stack-name better-wellness-live --template-body file://amazon-eks.yaml --capabilities CAPABILITY_NAMED_IAM  --region $AWS_REGION
 
         aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $DOCKER_REPO_URL       
 
@@ -72,5 +72,3 @@ jobs:
     - uses: actions-hub/kubectl@master
       with:
         args: apply -f profile-service/deployment.yaml -n ${{ env.KUBE_NAMESPACE }}
-
-
