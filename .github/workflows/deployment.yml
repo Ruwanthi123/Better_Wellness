@@ -40,18 +40,6 @@ jobs:
         aws-secret-access-key: ${{ env.AWS_SECRET_KEY }}
         aws-region: ${{ env.AWS_REGION }}
         
-    - uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-
-    - name: Build client-service
-      run: |
-        cd client-service/src/main/angular
-        npm install
-        npm run build
-        cd ../../../
-
     - name: Build and Push Docker Images, Create Stack, Upload S3 Files
       run: |
         #aws cloudformation create-stack --stack-name better-wellness-live --template-body file://amazon-eks.yaml --capabilities CAPABILITY_NAMED_IAM  --region $AWS_REGION
@@ -73,21 +61,11 @@ jobs:
         #done
 
         aws eks update-kubeconfig --region $AWS_REGION --name better-wellness-prod
-        echo "KUBE_CONFIG=$(cat ~/.kube/config)" >> $GITHUB_ENV
         cd client-service/src/main/angular/dist/jwt-angular/
         aws s3 cp . s3://better-wellness-live/ --recursive
         cd ../../../../../
-
-    - uses: actions-hub/kubectl@master
-      with:
-        args: apply -f auth-service/deployment.yaml -n ${{ env.KUBE_NAMESPACE }}
-
-    - uses: actions-hub/kubectl@master
-      with:
-        args: apply -f message-service/deployment.yaml -n ${{ env.KUBE_NAMESPACE }}
-
-    - uses: actions-hub/kubectl@master
-      with:
-        args: apply -f profile-service/deployment.yaml -n ${{ env.KUBE_NAMESPACE }}
+        kubectl apply -f auth-service/deployment.yaml -n ${{ env.KUBE_NAMESPACE }}
+        kubectl apply -f message-service/deployment.yaml -n ${{ env.KUBE_NAMESPACE }}
+        kubectl apply -f profile-service/deployment.yaml -n ${{ env.KUBE_NAMESPACE }}
 
 
