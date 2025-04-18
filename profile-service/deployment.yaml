@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: profile-service
-          image: /profile-service:latest
+          image: 750471540463.dkr.ecr.eu-north-1.amazonaws.com/profile-service:latest
           imagePullPolicy: Always
           env:
             - name: TZ
