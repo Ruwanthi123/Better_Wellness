@@ -295,8 +295,5 @@ Outputs:
     Value: !Ref EKSNodeGroup
     Description: The EKS Node Group Name
 
-  ECRRepositoryName:
-    Value: !Ref PrivateECRRepository
-    Description: ECR Repository Name
   
     
