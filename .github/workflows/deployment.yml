@@ -73,9 +73,10 @@ jobs:
         #done
 
         aws eks update-kubeconfig --region $AWS_REGION --name better-wellness-prod
-        cd client-service/src/main/angular/dist
+        echo "KUBE_CONFIG=$(cat ~/.kube/config)" >> $GITHUB_ENV
+        cd client-service/src/main/angular/dist/jwt-angular/
         aws s3 cp . s3://better-wellness-live/ --recursive
-        cd ../../../../
+        cd ../../../../../
 
     - uses: actions-hub/kubectl@master
       with:
