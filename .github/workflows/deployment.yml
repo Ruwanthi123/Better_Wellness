@@ -47,10 +47,10 @@ jobs:
 
     - name: Build client-service
       run: |
-        cd client-service/
+        cd client-service/src/main/angular
         npm install
         npm run build
-        cd ..
+        cd ../../../
 
     - name: Build and Push Docker Images, Create Stack, Upload S3 Files
       run: |
@@ -73,9 +73,9 @@ jobs:
         #done
 
         aws eks update-kubeconfig --region $AWS_REGION --name better-wellness-prod
-
-        cd client-service/dist
+        cd client-service/src/main/angular/dist
         aws s3 cp . s3://better-wellness-live/ --recursive
+        cd ../../../../
 
     - uses: actions-hub/kubectl@master
       with:
