@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: message-service
-          image: /message-service:latest
+          image: 750471540463.dkr.ecr.eu-north-1.amazonaws.com/message-service:latest
           imagePullPolicy: Always
           env:
             - name: TZ
