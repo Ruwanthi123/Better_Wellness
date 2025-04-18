@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.18]
     environment: better-wellness
     env:
       DOCKER_REPO_URL: ${{ secrets.REPO_URL }}
@@ -36,6 +39,18 @@ jobs:
         aws-access-key-id: ${{ env.AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ env.AWS_SECRET_KEY }}
         aws-region: ${{ env.AWS_REGION }}
+        
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Build client-service
+      run: |
+        cd client-service/
+        npm install
+        npm run build
+        cd ..
 
     - name: Build and Push Docker Images, Create Stack, Upload S3 Files
       run: |
