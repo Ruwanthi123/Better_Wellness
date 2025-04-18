@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: /auth-service:latest
+          image: 750471540463.dkr.ecr.eu-north-1.amazonaws.com/auth-service:latest
           imagePullPolicy: Always
           env:
             - name: TZ
