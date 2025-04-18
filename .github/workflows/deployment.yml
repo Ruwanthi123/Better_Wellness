@@ -1,0 +1,78 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "DOCKER_1.0" ]
+  pull_request:
+    branches: [ "DOCKER_1.0" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: better-wellness
+    env:
+      DOCKER_REPO_URL: ${{ secrets.REPO_URL }}
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION}}
+      KUBE_NAMESPACE: better-wellness-prod
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Deployment Environment
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build Artifacts
+      run: mvn clean install -DskipTests
+    - name: Configure AWS credentials & Build & Upload the Docker images
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: $AWS_ACCESS_KEY
+        aws-secret-access-key: $AWS_SECRET_KEY
+        aws-region: $AWS_REGION
+      run: |
+        aws cloudformation create-stack --stack-name better-wellness-live --template-body file://amazon-eks.yaml --capabilities CAPABILITY_NAMED_IAM  --region $AWS_REGION
+        aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin $DOCKER_REPO_URL       
+        echo "CURRENT_DATETIME=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+        echo "SERVICE_NAME=auth-service" >> $GITHUB_ENV
+        cd $SERVICE_NAME
+        docker build -t $SERVICE_NAME:${{ env.CURRENT_DATETIME }} .
+        docker tag $SERVICE_NAME:$CURRENT_DATETIME
+        docker tag $SERVICE_NAME:$CURRENT_DATETIME $DOCKER_REPO_URL/$SERVICE_NAME:$CURRENT_DATETIME
+        docker tag $SERVICE_NAME:$CURRENT_DATETIME $DOCKER_REPO_URL/$SERVICE_NAME:latest
+        docker push $DOCKER_REPO_URL/$DOCKER_REPO_NAME/$SERVICE_NAME:latest"
+
+        echo "SERVICE_NAME=message-service" >> $GITHUB_ENV
+        cd $SERVICE_NAME
+        docker build -t $SERVICE_NAME:${{ env.CURRENT_DATETIME }} .
+        docker tag $SERVICE_NAME:$CURRENT_DATETIME
+        docker tag $SERVICE_NAME:$CURRENT_DATETIME $DOCKER_REPO_URL/$SERVICE_NAME:$CURRENT_DATETIME
+        docker tag $SERVICE_NAME:$CURRENT_DATETIME $DOCKER_REPO_URL/$SERVICE_NAME:latest
+        docker push $DOCKER_REPO_URL/$DOCKER_REPO_NAME/$SERVICE_NAME:latest"
+
+        echo "SERVICE_NAME=profile-service" >> $GITHUB_ENV
+        cd $SERVICE_NAME
+        docker build -t $SERVICE_NAME:${{ env.CURRENT_DATETIME }} .
+        docker tag $SERVICE_NAME:$CURRENT_DATETIME
+        docker tag $SERVICE_NAME:$CURRENT_DATETIME $DOCKER_REPO_URL/$DOCKER_REPO_NAME/$SERVICE_NAME:$CURRENT_DATETIME
+        docker tag $SERVICE_NAME:$CURRENT_DATETIME $DOCKER_REPO_URL/$SERVICE_NAME:latest
+        docker push $DOCKER_REPO_URL/$DOCKER_REPO_NAME/$SERVICE_NAME:latest"
+        aws eks update-kubeconfig --region $AWS_REGION --name better-wellness-live
+
+        echo "SERVICE_NAME=client-service" >> $GITHUB_ENV
+        cd $SERVICE_NAME/dist
+        aws s3 cp . s3://better-wellness-live/ --recursive
+        
+    - uses: actions-hub/kubectl@master
+      with:
+        args: apply -f auth-service/deployment.yaml -n $KUBE_NAMESPACE
+    - uses: actions-hub/kubectl@master
+      with:
+        args: apply -f message-service/deployment.yaml -n $KUBE_NAMESPACE
+    - uses: actions-hub/kubectl@master
+      with:
+        args: apply -f profile-service/deployment.yaml -n $KUBE_NAMESPACE    
+
